@@ -20,6 +20,7 @@ vk_token=""
 vk_lpServer=""
 vk_key=""
 vk_ts=""
+vk_sent_msg_id=0
 
 proxy={"http":"socks5://127.0.0.1:9050","https":"socks5://127.0.0.1:9050","ftp":"socks5://127.0.0.1:9050"}
 
@@ -77,7 +78,7 @@ def vk_updateLpServerInfo():
 
 def vk_getLpEvents():
     #https://{$server}?act=a_check&key={$key}&ts={$ts}&wait=25&mode=2&version=2
-    global vk_ts
+    global vk_ts, vk_sent_msg_id
     vk_response=requests.get("https://"+vk_lpServer+"?act=a_check&key="+vk_key+"&ts="+(str)(vk_ts)+"&wait=25&mode=0&version=3")
     if not vk_response.status_code==200: return "Server error"
     if "failed" in vk_response.json():
@@ -88,6 +89,8 @@ def vk_getLpEvents():
     vk_ts=vk_response.json()["ts"]
     for event in vk_response.json()["updates"]:
         if event[0]==4 and event[3]==vk_user_id:
+            if event[1]==vk_sent_msg_id:
+                continue
             print(event[5])
             action_parser("vk",event[5])
     return "Ok"
@@ -95,13 +98,12 @@ def vk_getLpEvents():
 def vk_send_msg(vk_user_id, text):
     #messages.send?chat_id=202060108&message=Test message&v=5.00
     #https://api.vk.com/method/messages.send?user_id=202060108&message=Test message&access_token=...&v=5.00
-    global  vk_api_url, vk_token
+    global  vk_api_url, vk_token, vk_sent_msg_id
     vk_response=requests.get(vk_api_url+"messages.send?user_id="+(str)(vk_user_id)+"&message="+text+"&access_token="+vk_token+"&v=5.00")
     if not vk_response.status_code==200: return "Server error"
     if "error" in vk_response.json():
         return vk_response.json()["error"]
-    elif not "peer_id" in vk_response.json() or not "message_id" in vk_response.json():
-        return "Unknown error"
+    vk_sent_msg_id=vk_response.json()["response"]
 
 def vk_init():
     global vk_user_id, vk_token

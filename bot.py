@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import requests, time, subprocess, os, json, glob
+import time, subprocess, os, json, glob
 from importlib.machinery import SourceFileLoader
 
 def action_parser(source,action):
@@ -21,8 +21,14 @@ def action_parser(source,action):
 if __name__=="__main__":
     #os.system("echo 4 > /sys/class/gpio/export")
     modules=glob.glob("bots/*.py")
-    modules.remove(glob.glob("bots/BotTemplate*")[0])
-    #l.append(SourceFileLoader("Bot", "bots/tgBot.py").load_module())
+    if modules == []:
+        print("No bots available")
+        exit()
+    if not glob.glob("bots/BotTemplate*") == []:
+        modules.remove(glob.glob("bots/BotTemplate*")[0])
+    if modules == []:
+        print("No bots available")
+        exit()
     imports=[]
     for mod in modules:
         imports.append(SourceFileLoader(mod.split('\\')[1],mod).load_module())
@@ -30,14 +36,6 @@ if __name__=="__main__":
         modules[i]=modules[i].split(".py")[0]
         modules[i]+=".json"
     bots=[]
-#    for i in range(len(imports)):
-#        bots.append(imports[i].Bot(modules[i]))
-#    for bot in bots:
-#        print(bot)
-#        if not bot.isValid:
-#            bots.remove(bot)
-#            continue
-#        print(bot.sendMessage(bot.user_id,"hello_from_bot"))
     for i in range(len(imports)):
         tmpbot=imports[i].Bot(modules[i])
         if(tmpbot.isValid):
@@ -46,8 +44,8 @@ if __name__=="__main__":
             print("No", end=' ')
             print(modules[i],end=" config file found\n")
     print(bots)
-#    while True:
-#        for bot in bots:
-#            result=bot.getActions()
-#            if(not result == []): print(result)
-#            time.sleep(5)
+    while True:
+        for bot in bots:
+            result=bot.getActions()
+            if(not result == []): print(result)
+            time.sleep(5)

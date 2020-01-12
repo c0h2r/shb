@@ -1,8 +1,8 @@
-import json, requests
+import json, requests, os
 from BotTemplate import BotTemplate
 
 class Bot(BotTemplate):
-    proxy={"http":"socks5://127.0.0.1:9050","https":"socks5://127.0.0.1:9150","ftp":"socks5://127.0.0.1:9050"}
+    proxy={"http":"socks5://127.0.0.1:9150","https":"socks5://127.0.0.1:9150","ftp":"socks5://127.0.0.1:9150"}
     timeout=5
     def postInit(self):
         pass
@@ -12,9 +12,9 @@ class Bot(BotTemplate):
         try:
             tg_response=requests.get(self.api_url+self.access_token+"/getUpdates?offset="+(str)(self.last_message_id)+"&timeout="+(str)(self.timeout),proxies=self.proxy)
         except:
-            return None
-        if not tg_response.status_code==200: return 1
-        if not tg_response.json()["ok"]: return 2
+            return []
+        if not tg_response.status_code==200: return []
+        if not tg_response.json()["ok"]: return []
         #print(tg_response.json())
         for element in tg_response.json()["result"]:
             if element["update_id"]>self.last_message_id:
@@ -31,14 +31,17 @@ class Bot(BotTemplate):
         try:
             tg_response=requests.get(self.api_url+self.access_token+"/sendMessage?chat_id="+(str)(tg_chat_id)+"&text="+text,proxies=self.proxy)
         except:
-            return "Error"
-        if not tg_response.status_code==200: return "Server error"
-        if not tg_response.json()["ok"]: return "Server didn\'t return ok. Not valid response?"
-        return "Msg sent successfully"
-    def checkData(self):
-        print(self.api_url)
-        print(self.user_id)
-        print(self.access_token)
-        print(self.last_message_id)
-        print()
-
+            return 1
+        if not tg_response.status_code==200: return 2
+        if not tg_response.json()["ok"]: return 3
+        return 0
+    def sendImage(self, tg_chat_id, path_to_image):
+        if os.path.exists(path_to_image):
+            data={'chat_id':tg_chat_id}
+            image={'photo':open(path_to_image, 'rb')}
+            try:
+                tg_response=requests.post(self.api_url+self.access_token+"/sendPhoto", data=data, files=image, proxies=self.proxy)
+            except:
+               return 2
+            return 0
+        return 1

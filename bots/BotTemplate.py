@@ -30,7 +30,7 @@ class BotTemplate(ABC):
         self.last_message_id=data["last_message_id"]
         self.postInit()
     @abstractmethod
-    def postInit(self):
+    def postInit():
         """Метод используется, если боту при инициализации требуется выполнить дополнительные действия"""
         pass
     @abstractmethod

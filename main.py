@@ -58,7 +58,7 @@ def action_parser(action):
     global rooms
     print(action)
     if action[0]==1:
-        return str(os.popen(action[1:]).read())
+        return [str(os.popen(action[1:]).read())]
     else:
         action=action.lower()
         if "комнате" in action:
@@ -112,9 +112,10 @@ if __name__=="__main__":
             if(not result == []):
                 for action in result:
                     result=action_parser(action)
+                    #print(result)
                     if len(result)>1:
                         if result[0]==1:
-                            bot.sendImage(bot.user_id,result[1])
+                            print(bot.sendImage(bot.user_id,result[1]))
                         elif result[0]==2:
                             result.remove[0]
                             bot.sendImage(bot.user_id,'\n'.join(result))

@@ -61,7 +61,7 @@ class Bot(BotTemplate):
             return 1
         if not vk_response.status_code==200: return 2
         try:
-            image=files = {'file': open(path_to_image, 'rb')}
+            image={'file': open(path_to_image, 'rb')}
         except:
             return 3
         try:
@@ -73,7 +73,7 @@ class Bot(BotTemplate):
         except:
             return 5
         try:
-            sending_response=requests.get(self.api_url+"messages.send?user_id="+str(vk_user_id)+"attachment=photo"+str(vk_response.json()['response'][0]['owner_id'])+'_'+str(vk_response.json()['response'][0]['id'])+"&access_token="+self.access_token+"&v=5.00")
+            sending_response=requests.get(self.api_url+"messages.send?user_id="+str(vk_user_id)+"&attachment=photo"+str(vk_response.json()['response'][0]['owner_id'])+'_'+str(vk_response.json()['response'][0]['id'])+"&access_token="+self.access_token+"&v=5.00")
         except:
             return 6
-        return 0
+        return sending_response

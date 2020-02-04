@@ -1,4 +1,4 @@
-import time, os
+import time, os, json, cv2
 from multiprocessing import Process
 
 #class Room:
@@ -66,7 +66,7 @@ class Room:
     hasLight=False
     hasCamera=False
     lightPin=0
-    cameraPin=0
+    cameraId=0
     isLightOn=False
     def __init__(self,configJson):
         if configJson["hasLight"]:
@@ -74,26 +74,28 @@ class Room:
             os.system("echo "+ str(self.lightPin)+" > /sys/class/gpio/export")
             self.hasLight=True
         if configJson["hasCamera"]:
-            self.__camera=cv2.VideoCapture(0)
+            if "cameraId" in configJson:
+                self.cameraId=configJson["cameraId"]
+            self.__camera=cv2.VideoCapture(self.cameraId)
             self.hasCamera=True
     def lightOn(self):
-        if(not hasLight):return "The room has no lightning."
-        if(isLightOn):return "The light is already on."
+        if(not self.hasLight):return "The room has no lightning."
+        if(self.isLightOn):return "The light is already on."
         try:
-            os.system("echo \"in\" > /sys/class/gpio/gpio"+ str(lightPin) +"/direction")
+            os.system("echo \"in\" > /sys/class/gpio/gpio"+ str(self.lightPin) +"/direction")
         except: return "Can\'t turn the light on."
-        islightOn=True
+        self.islightOn=True
         return "Ok!"
     def lightOff(self):
-        if(not hasLight):return "ERR: The room has no lightning."
-        if(not isLightOn):return "The light is already off."
+        if(not self.hasLight):return "ERR: The room has no lightning."
+        if(not self.isLightOn):return "The light is already off."
         try:
-            os.system("echo \"out\" > /sys/class/gpio/gpio"+ str(lightPin) +"/direction")
+            os.system("echo \"out\" > /sys/class/gpio/gpio"+ str(self.lightPin) +"/direction")
         except: return "Can\'t turn the light off."
-        islightOn=False
+        self.islightOn=False
         return "Ok!"
     def makePhoto(self):
-        if(not hasCamera):return "ERR: The room has no camera"
+        if(not self.hasCamera):return "ERR: The room has no camera"
         try:
             useless,image=self.__camera.read()
             name=str(datetime.datetime.now())
@@ -110,14 +112,17 @@ class Home:
         self.__path_to_config=path_to_config
         try:
             with open(path_to_config,"r") as config:
-                self.__data=json.load(config)
-            self.roomsCount=len(self.__data["rooms"])
+                data=json.load(config)
+            for room in data["rooms"]:
+                self.rooms.append(Room(room))
         except:
             isValid=False
-        for room in self.__data["rooms"]:
-            rooms.append(Room(room))
 
 
 
 if __name__=="__main__":
-    pass
+    home=Home("config.json")
+    print(len(home.rooms))
+    for room in home.rooms:
+        print(room.hasCamera)
+        print(room.lightOn())

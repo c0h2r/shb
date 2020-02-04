@@ -1,6 +1,7 @@
 # -*- codinfg: utf-8 -*- #
 import time, subprocess, os, json, glob
 from importlib.machinery import SourceFileLoader
+import home
 
 def getBots():
     modules=glob.glob("bots/*.py")
@@ -28,83 +29,85 @@ def getBots():
             print(modules[i],end=" config file found\n")
     return bots
 
-def getRooms():
-    modules=glob.glob("rooms/*.py")
-    if modules == []:
-        print("No rooms available")
-        exit()
-    if not glob.glob("rooms/RoomTemplate*") == []:
-        modules.remove(glob.glob("rooms/RoomTemplate*")[0])
-    if modules == []:
-        print("No rooms available")
-        exit()
-    imports=[]
-    for mod in modules:
-        imports.append(SourceFileLoader(mod.split('/')[1],mod).load_module())
-    for i in range(len(modules)):
-        modules[i]=modules[i].split(".py")[0]
-        modules[i]+=".json"
-    rooms=[]
-    for i in range(len(imports)):
-        tmproom=imports[i].Room(modules[i])
-        if(tmproom.isValid):
-            rooms.append(tmproom)
-        else:
-            print("No", end=' ')
-            print(modules[i],end=" config file found\n")
-    return rooms
+#def getRooms():
+#    modules=glob.glob("rooms/*.py")
+#    if modules == []:
+#        print("No rooms available")
+#        exit()
+#    if not glob.glob("rooms/RoomTemplate*") == []:
+#        modules.remove(glob.glob("rooms/RoomTemplate*")[0])
+#    if modules == []:
+#        print("No rooms available")
+#        exit()
+#    imports=[]
+#    for mod in modules:
+#        imports.append(SourceFileLoader(mod.split('/')[1],mod).load_module())
+#    for i in range(len(modules)):
+#        modules[i]=modules[i].split(".py")[0]
+#        modules[i]+=".json"
+#    rooms=[]
+#    for i in range(len(imports)):
+#        tmproom=imports[i].Room(modules[i])
+#        if(tmproom.isValid):
+#            rooms.append(tmproom)
+#        else:
+#            print("No", end=' ')
+#            print(modules[i],end=" config file found\n")
+#    return rooms
 
 def action_parser(action):
-    global rooms
+    global home
     print(action)
-    if action[0]==1:
-        return [str(os.popen(action[1:]).read())]
+    if action[0]=='!':
+        return [0, str(os.popen(action[1:]).read())]
     else:
         action=action.lower()
         if "комнате" in action:
             roomNumber=int(action.split("комнате ")[1])
-            if roomNumber>len(rooms):
-                return ["Неправильный номер комнаты. Всего доступно "+len(rooms)+", первая имеет индекс \'0\' "]
+            if roomNumber>len(home.rooms):
+                return [0, "Неправильный номер комнаты. Всего доступно "+len(home.rooms)+", первая имеет индекс \'0\' "]
         else:
-            return ["Не задан номер комнаты. Всего доступно "+str(len(rooms))+", первая имеет индекс \'0\' "]
+            return [0, "Не задан номер комнаты. Всего доступно "+str(len(home.rooms))+", первая имеет индекс \'0\' "]
         if "скажи" in action or "какая" in action:
-             if "температуру" in action or "температура" in action:
-                 return [rooms[roomNumber].temp]
-             elif "свет" in action:
-                 return [rooms[roomNumber].isLightOn]
+#             if "температуру" in action or "температура" in action:
+#                 return [home.rooms[roomNumber].temp]
+             if "свет" in action:
+                 return [0, home.rooms[roomNumber].isLightOn]
              else:
-                return ["Неподдерживаемая команда"]
+                return [0, "Неподдерживаемая команда"]
         elif "ли" in action:
             if "свет" in action:
-                if rooms[roomNumber].isLightOn:
-                    return ["Да"]
+                if home.rooms[roomNumber].isLightOn:
+                    return [0, "Да"]
                 else:
-                    return ["Нет"]
+                    return [0, "Нет"]
             else:
-                return ["Неподдерживаемая команда"]
+                return [0, "Неподдерживаемая команда"]
         elif "свет" in action:
             if "вкл" in action:
-                rooms[roomNumber].lightOn()
-                return ["Ok!"]
+                return [0, home.rooms[roomNumber].lightOn()]
             elif "выкл" in action:
-                rooms[roomNumber].lightOff()
-                return ["Ok!"]
+                return [0, home.rooms[roomNumber].lightOff()]
             else:
-                return ["Неподдерживаемая команда"]
+                return [0, "Неподдерживаемая команда"]
         elif  "сделай" in action and "фото" in action:
             try:
-                path=rooms[roomNumber].MakePhoto()
+                camResponse=home.rooms[roomNumber].makePhoto()
             except:
-                return ["Не могу сделать фото. Проверьте, имеет ли данная комната камеру"]
-            return [1,path ]
+                return [0, "Не могу сделать фото. Проверьте, имеет ли данная комната камеру"]
+            if not "ERR:" in camResponse:
+                return [1 ,path]
+            else:
+                return [0, camResponse]
         else:
-            return ["Неподдерживаемая команда"]
+            return [0, "Неподдерживаемая команда"]
 
 if __name__=="__main__":
     bots=getBots()
-    rooms=getRooms()
+#    rooms=getRooms()
+    home=home.Home("homeConfig.json")
     print(bots)
-    print(rooms)
+    print(home.rooms)
     #exit()
     while True:
         for bot in bots:
@@ -113,13 +116,15 @@ if __name__=="__main__":
                 for action in result:
                     result=action_parser(action)
                     #print(result)
-                    if len(result)>1:
-                        if result[0]==1:
-                            print(bot.sendImage(bot.user_id,result[1]))
-                        elif result[0]==2:
-                            result.remove[0]
-                            bot.sendImage(bot.user_id,'\n'.join(result))
+                    if len(result)>=2:
+                        if result[0]==0:
+                            #print(bot.sendImage(bot.user_id,result[1]))
+                            bot.sendMessage(bot.user_id, result[1])
+                        elif result[0]==1:
+                            bot.sendImage(bot.user_id, result[1])
+                            #result.remove[0]
+                            #bot.sendImage(bot.user_id,'\n'.join(result))
                     else:
-                        bot.sendMessage(bot.user_id,result[0])
+                        bot.sendMessage(bot.user_id,"<ERROR>")
             else: print("Nothing happened")
             time.sleep(5)

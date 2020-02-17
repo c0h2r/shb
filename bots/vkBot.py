@@ -14,6 +14,7 @@ class Bot(BotTemplate):
             vk_response=requests.get(self.api_url+"messages.getLongPollServer?access_token="+self.access_token+"&v=5.00")
         except:
             return False
+        print(vk_response.json());
         self.lpServer=vk_response.json()["response"]["server"]
         self.key=vk_response.json()["response"]["key"]
         self.ts=vk_response.json()["response"]["ts"]
@@ -36,7 +37,7 @@ class Bot(BotTemplate):
         self.ts=vk_response.json()["ts"]
         for event in vk_response.json()["updates"]:
             if event[0]==4 and event[3]==self.user_id:
-                if event[1]==self.last_message_id:
+                if event[1]==self.last_message_id or event[5]=="":
                     continue
                 actions.append(event[5])
         return actions

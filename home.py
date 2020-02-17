@@ -1,4 +1,4 @@
-import time, os, json, cv2
+import time, os, json, cv2, datetime
 from multiprocessing import Process
 
 #class Room:
@@ -96,13 +96,13 @@ class Room:
         return "Ok!"
     def makePhoto(self):
         if(not self.hasCamera):return "ERR: The room has no camera"
-        try:
-            useless,image=self.__camera.read()
-            name=str(datetime.datetime.now())
-            name=name[0:10]+'_'+name[11:19]+".png" #генерация имени фотографии
-            cv2.imwrite(name,image)
-        except:
-            return "ERR: Can't make a photo."
+#       try:
+        _ ,image=self.__camera.read()
+        name=str(datetime.datetime.now())
+        name=name[0:10]+'_'+name[11:19]+".png" #генерация имени фотографии
+        cv2.imwrite(name,image)
+#       except:
+#            return "ERR: Can't make a photo."
         return name
 
 class Home:

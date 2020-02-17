@@ -57,7 +57,10 @@ def getBots():
 
 def action_parser(action):
     global home
-    print(action)
+    try:
+        action[0]
+    except:
+        return [2]
     if action[0]=='!':
         return [0, str(os.popen(action[1:]).read())]
     else:
@@ -96,7 +99,7 @@ def action_parser(action):
             except:
                 return [0, "Не могу сделать фото. Проверьте, имеет ли данная комната камеру"]
             if not "ERR:" in camResponse:
-                return [1 ,path]
+                return [1 ,camResponse]
             else:
                 return [0, camResponse]
         else:
@@ -124,6 +127,8 @@ if __name__=="__main__":
                             bot.sendImage(bot.user_id, result[1])
                             #result.remove[0]
                             #bot.sendImage(bot.user_id,'\n'.join(result))
+                        elif result[0]==2:
+                            print("!ERR!")
                     else:
                         bot.sendMessage(bot.user_id,"<ERROR>")
             else: print("Nothing happened")

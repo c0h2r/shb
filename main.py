@@ -29,32 +29,6 @@ def getBots():
             print(modules[i],end=" config file found\n")
     return bots
 
-#def getRooms():
-#    modules=glob.glob("rooms/*.py")
-#    if modules == []:
-#        print("No rooms available")
-#        exit()
-#    if not glob.glob("rooms/RoomTemplate*") == []:
-#        modules.remove(glob.glob("rooms/RoomTemplate*")[0])
-#    if modules == []:
-#        print("No rooms available")
-#        exit()
-#    imports=[]
-#    for mod in modules:
-#        imports.append(SourceFileLoader(mod.split('/')[1],mod).load_module())
-#    for i in range(len(modules)):
-#        modules[i]=modules[i].split(".py")[0]
-#        modules[i]+=".json"
-#    rooms=[]
-#    for i in range(len(imports)):
-#        tmproom=imports[i].Room(modules[i])
-#        if(tmproom.isValid):
-#            rooms.append(tmproom)
-#        else:
-#            print("No", end=' ')
-#            print(modules[i],end=" config file found\n")
-#    return rooms
-
 def action_parser(action):
     global home
     try:
@@ -72,8 +46,6 @@ def action_parser(action):
         else:
             return [0, "Не задан номер комнаты. Всего доступно "+str(len(home.rooms))+", первая имеет индекс \'0\' "]
         if "скажи" in action or "какая" in action:
-#             if "температуру" in action or "температура" in action:
-#                 return [home.rooms[roomNumber].temp]
              if "свет" in action:
                  return [0, home.rooms[roomNumber].isLightOn]
              else:
@@ -107,11 +79,9 @@ def action_parser(action):
 
 if __name__=="__main__":
     bots=getBots()
-#    rooms=getRooms()
     home=home.Home("homeConfig.json")
     print(bots)
     print(home.rooms)
-    #exit()
     while True:
         for bot in bots:
             result=bot.getActions()
@@ -121,12 +91,9 @@ if __name__=="__main__":
                     #print(result)
                     if len(result)>=2:
                         if result[0]==0:
-                            #print(bot.sendImage(bot.user_id,result[1]))
                             bot.sendMessage(bot.user_id, result[1])
                         elif result[0]==1:
                             bot.sendImage(bot.user_id, result[1])
-                            #result.remove[0]
-                            #bot.sendImage(bot.user_id,'\n'.join(result))
                         elif result[0]==2:
                             print("!ERR!")
                     else:

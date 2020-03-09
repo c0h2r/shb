@@ -21,17 +21,17 @@ class Room:
         if(not self.hasLight):return "The room has no lightning."
         if(self.isLightOn):return "The light is already on."
         try:
-            os.system("echo \"in\" > /sys/class/gpio/gpio"+ str(self.lightPin) +"/direction")
+            os.system("echo \"out\" > /sys/class/gpio/gpio"+ str(self.lightPin) +"/direction")
         except: return "Can\'t turn the light on."
-        self.islightOn=True
+        self.isLightOn=True
         return "Ok!"
     def lightOff(self):
         if(not self.hasLight):return "ERR: The room has no lightning."
         if(not self.isLightOn):return "The light is already off."
         try:
-            os.system("echo \"out\" > /sys/class/gpio/gpio"+ str(self.lightPin) +"/direction")
+            os.system("echo \"in\" > /sys/class/gpio/gpio"+ str(self.lightPin) +"/direction")
         except: return "Can\'t turn the light off."
-        self.islightOn=False
+        self.isLightOn=False
         return "Ok!"
     def makePhoto(self):
         if(not self.hasCamera):return "ERR: The room has no camera"
